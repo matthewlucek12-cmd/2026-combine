@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fantasy Football Combine - Depth Chart</title>
+
+<style>
+body{
+margin:0;
+background:#101820;
+color:white;
+font-family:Arial;
+text-align:center;
+}
+
+header{
+background:#0b6623;
+padding:15px;
+}
+
+.stats{
+display:flex;
+justify-content:center;
+gap:15px;
+flex-wrap:wrap;
+margin:15px;
+}
+
+.box{
+background:#263238;
+padding:10px 15px;
+border-radius:8px;
+}
+
+button{
+padding:12px 25px;
+background:#0b6623;
+color:white;
+border:0;
+border-radius:8px;
+font-size:18px;
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(4,80px);
+gap:10px;
+justify-content:center;
+margin:25px;
+}
+
+.card{
+height:80px;
+display:flex;
+align-items:center;
+justify-content:center;
+border-radius:10px;
+font-size:20px;
+font-weight:bold;
+cursor:pointer;
+border:3px solid white;
+}
+
+.selected{
+border-color:yellow;
+}
+
+.qb{background:#1565c0;}
+.rb{background:#8e24aa;}
+.wr{background:#ef6c00;}
+.te{background:#2e7d32;}
+
+#result{
+display:none;
+position:fixed;
+inset:0;
+background:#101820;
+align-items:center;
+justify-content:center;
+flex-direction:column;
+}
+
+.resultbox{
+background:#263238;
+padding:25px;
+border-radius:12px;
+}
+
+@media(max-width:500px){
+.grid{
+grid-template-columns:repeat(4,65px);
+}
+.card{
+height:65px;
+font-size:16px;
+}
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>🏈 Fantasy Football Combine</h1>
+<h2>Depth Chart Challenge</h2>
+</header>
+
+<div class="stats">
+<div class="box">Round: <span id="round">1</span>/2</div>
+<div class="box">Time: <span id="time">0</span>s</div>
+<div class="box">Moves: <span id="moves">0</span></div>
+</div>
+
+<button onclick="restart()">Restart</button>
+
+<div class="grid" id="grid"></div>
+
+
+<div id="result">
+<div class="resultbox">
+<h2>🏆 Results</h2>
+<p id="results"></p>
+<button onclick="restart()">Play Again</button>
+</div>
+</div>
+
+
+<script>
+
+const goal=[
+"QB1","QB2","QB3","QB4",
+"RB1","RB2","RB3","RB4",
+"WR1","WR2","WR3","WR4",
+"TE1","TE2","TE3","TE4"
+];
+
+
+const rounds=[
+[
+"WR3","RB1","QB4","TE2",
+"RB4","WR1","TE4","QB2",
+"TE1","QB3","WR4","RB2",
+"QB1","TE3","RB3","WR2"
+],
+[
+"TE2","WR4","RB3","QB1",
+"WR2","QB4","RB1","TE4",
+"RB4","TE1","QB3","WR3",
+"QB2","RB2","WR1","TE3"
+]
+];
+
+
+let board=[];
+let round=0;
+let selected=null;
+let moves=0;
+let time=0;
+let timer=null;
+let started=false;
+
+let results=[];
+
+
+function loadRound(){
+
+board=[...rounds[round]];
+moves=0;
+time=0;
+selected=null;
+started=false;
+
+document.getElementById("moves").innerHTML=0;
+document.getElementById("time").innerHTML=0;
+document.getElementById("round").innerHTML=round+1;
+
+draw();
+
+}
+
+
+
+function draw(){
+
+let grid=document.getElementById("grid");
+grid.innerHTML="";
+
+board.forEach((x,i)=>{
+
+let c=document.createElement("div");
+
+c.className="card "+x.substring(0,2).toLowerCase();
+
+if(selected===i)
+c.classList.add("selected");
+
+c.innerHTML=x;
+
+c.onclick=()=>clickCard(i);
+
+grid.appendChild(c);
+
+});
+
+}
+
+
+
+function clickCard(i){
+
+if(!started){
+startTimer();
+started=true;
+}
+
+
+if(selected===null){
+
+selected=i;
+
+}
+
+else{
+
+if(selected!==i){
+
+let temp=board[selected];
+board[selected]=board[i];
+board[i]=temp;
+
+moves++;
+
+document.getElementById("moves").innerHTML=moves;
+
+}
+
+selected=null;
+
+check();
+
+}
+
+draw();
+
+}
+
+
+
+function check(){
+
+if(JSON.stringify(board)===JSON.stringify(goal)){
+
+clearInterval(timer);
+
+results.push({
+time:time,
+moves:moves
+});
+
+round++;
+
+
+if(round<2){
+
+loadRound();
+
+}
+
+else{
+
+showResults();
+
+}
+
+}
+
+}
+
+
+
+function startTimer(){
+
+timer=setInterval(()=>{
+
+time++;
+
+document.getElementById("time").innerHTML=time;
+
+},1000);
+
+}
+
+
+
+function showResults(){
+
+let totalTime=0;
+let totalMoves=0;
+
+let text="";
+
+results.forEach((r,i)=>{
+
+totalTime+=r.time;
+totalMoves+=r.moves;
+
+text+="Round "+(i+1)+": "+r.time+"s / "+r.moves+" moves<br>";
+
+});
+
+
+text+="<br>TOTAL<br>";
+text+=totalTime+" seconds<br>";
+text+=totalMoves+" moves";
+
+
+document.getElementById("results").innerHTML=text;
+
+document.getElementById("result").style.display="flex";
+
+}
+
+
+
+function restart(){
+
+clearInterval(timer);
+
+round=0;
+results=[];
+
+loadRound();
+
+document.getElementById("result").style.display="none";
+
+}
+
+
+loadRound();
+
+</script>
+
+</body>
+</html>
