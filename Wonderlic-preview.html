@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Fantasy Football Combine - Wonderlic Challenge</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+
+*{
+box-sizing:border-box;
+}
+
+body{
+background:#111827;
+color:white;
+font-family:Arial,sans-serif;
+text-align:center;
+margin:0;
+padding:10px;
+}
+
+h1{
+color:#00d084;
+font-size:28px;
+}
+
+#container{
+width:95%;
+max-width:850px;
+margin:auto;
+}
+
+.timer{
+font-size:28px;
+color:#00d084;
+margin:20px;
+position:sticky;
+top:0;
+background:#111827;
+padding:10px;
+z-index:10;
+}
+
+.question{
+
+background:#1f2937;
+
+padding:15px;
+
+margin:15px 0;
+
+border-radius:12px;
+
+text-align:left;
+
+font-size:17px;
+
+}
+
+.option{
+
+display:flex;
+
+align-items:center;
+
+background:#374151;
+
+padding:14px;
+
+margin:10px 0;
+
+border-radius:10px;
+
+cursor:pointer;
+
+min-height:50px;
+
+}
+
+.option:hover{
+
+background:#00d084;
+
+}
+
+
+.option input{
+
+width:20px;
+
+height:20px;
+
+margin-right:12px;
+
+}
+
+
+button{
+
+background:#00d084;
+
+color:white;
+
+border:none;
+
+padding:18px;
+
+width:90%;
+
+max-width:350px;
+
+border-radius:12px;
+
+font-size:22px;
+
+cursor:pointer;
+
+margin:15px;
+
+}
+
+
+button:disabled{
+
+background:#4b5563;
+
+}
+
+
+#quiz{
+
+display:none;
+
+}
+
+
+#result{
+
+color:#00d084;
+
+font-size:28px;
+
+margin-top:30px;
+
+}
+
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<h1>🏈 Fantasy Football Combine</h1>
+
+<h2>🧠 Wonderlic Cognitive Challenge</h2>
+
+
+<p>
+25 Questions | 6 Minutes<br>
+Work quickly. Accuracy matters.
+</p>
+
+
+
+<div class="timer">
+
+Time Remaining:
+<span id="time">6:00</span>
+
+</div>
+
+
+
+<button id="startButton" onclick="startQuiz()">
+
+START QUIZ
+
+</button>
+
+
+
+<div id="container">
+
+
+<form id="quiz"></form>
+
+
+<div id="submitArea" style="display:none;text-align:center">
+
+<button onclick="submitQuiz()">
+
+SUBMIT TEST
+
+</button>
+
+</div>
+
+
+<h2 id="result"></h2>
+
+
+</div>
+
+
+
+<script>
+
+
+const questions=[
+
+{
+q:"If a player runs 4 miles in 32 minutes, how many minutes does it take him to run 1 mile?",
+a:["6","8","10","12"],c:1
+},
+
+{
+q:"A team has 53 players. If 40% are rookies, approximately how many rookies are there?",
+a:["18","21","24","30"],c:2
+},
+
+{
+q:"A quarterback completes 18 of 30 passes. What percentage is this?",
+a:["50%","60%","70%","80%"],c:1
+},
+
+{
+q:"A jersey costs $72 after a 20% discount. What was the original price?",
+a:["80","86","90","96"],c:2
+},
+
+{
+q:"If 5 workers complete a job in 12 days, how long would 10 workers take?",
+a:["3 days","6 days","12 days","24 days"],c:1
+},
+
+{
+q:"Choose the word closest in meaning to abundant.",
+a:["Rare","Plentiful","Weak","Empty"],c:1
+},
+
+{
+q:"Choose the opposite of reluctant.",
+a:["Eager","Quiet","Slow","Careful"],c:0
+},
+
+{
+q:"Which word is spelled correctly?",
+a:["Occured","Occurred","Ocurred","Occurrd"],c:1
+},
+
+{
+q:"Select the grammatically correct sentence.",
+a:[
+"The players was ready.",
+"The players were ready.",
+"The players is ready.",
+"The players be ready."
+],c:1
+},
+
+{
+q:"All quarterbacks are athletes. Tom is a quarterback. What must be true?",
+a:[
+"Tom is an athlete.",
+"All athletes are quarterbacks.",
+"Tom is a coach.",
+"Tom is a rookie."
+],c:0
+},
+
+{
+q:"What number comes next? 2, 6, 12, 20, 30, ___",
+a:["36","40","42","48"],c:2
+},
+
+{
+q:"Which does not belong?",
+a:["Triangle","Square","Circle","Cube"],c:3
+},
+
+{
+q:"If CAT becomes DBU, how would DOG be written?",
+a:["EPH","EOH","DPG","FPH"],c:0
+},
+
+{
+q:"A clock shows 3:15. Approximately what angle is between the hands?",
+a:["0 degrees","45 degrees","90 degrees","180 degrees"],c:1
+},
+
+{
+q:"Which shape has the most sides?",
+a:["Triangle","Square","Pentagon","Hexagon"],c:3
+},
+
+{
+q:"Which word does not belong?",
+a:["Apple","Banana","Carrot","Orange"],c:2
+},
+
+{
+q:"A football field is 120 yards long. How many feet is this?",
+a:["240","300","360","400"],c:2
+},
+
+{
+q:"What number comes next? 3,9,27,81,___",
+a:["162","243","324","729"],c:1
+},
+
+{
+q:"A player has 15 touchdowns after 5 games. At the same pace, how many after 12 games?",
+a:["24","30","36","40"],c:2
+},
+
+{
+q:"Choose the word closest in meaning to obstacle.",
+a:["Advantage","Barrier","Reward","Shortcut"],c:1
+},
+
+{
+q:"All coaches are leaders. Which statement must be true?",
+a:[
+"All leaders are coaches",
+"Coaches are leaders",
+"All players are coaches",
+"No leaders are players"
+],c:1
+},
+
+{
+q:"What number comes next? 5,10,20,40,___",
+a:["60","70","80","100"],c:2
+},
+
+{
+q:"A map scale shows 1 inch equals 10 miles. A road measures 6 inches. How far is it?",
+a:["16 miles","50 miles","60 miles","100 miles"],c:2
+},
+
+{
+q:"Which sentence is correct?",
+a:[
+"Your going to win.",
+"You're going to win.",
+"Yore going to win.",
+"Your'e going to win."
+],c:1
+},
+
+{
+q:"A player catches 7 passes per game for 16 games. How many catches total?",
+a:["98","102","112","120"],c:2
+}
+
+];
+
+
+let time=360;
+
+let timer;
+
+
+
+function loadQuiz(){
+
+let quiz=document.getElementById("quiz");
+
+
+questions.forEach((item,index)=>{
+
+
+let html=`
+
+<div class="question">
+
+<b>${index+1}. ${item.q}</b>
+
+`;
+
+
+item.a.forEach((answer,i)=>{
+
+
+html+=`
+
+<label class="option">
+
+<input type="radio" name="q${index}" value="${i}">
+
+${answer}
+
+</label>
+
+`;
+
+});
+
+
+html+="</div>";
+
+
+quiz.innerHTML+=html;
+
+
+});
+
+
+}
+
+
+
+function startQuiz(){
+
+document.getElementById("quiz").style.display="block";
+
+document.getElementById("submitArea").style.display="block";
+
+document.getElementById("startButton").style.display="none";
+
+
+startTimer();
+
+}
+
+
+
+function startTimer(){
+
+
+timer=setInterval(()=>{
+
+
+time--;
+
+
+let minutes=Math.floor(time/60);
+
+let seconds=time%60;
+
+
+document.getElementById("time").innerHTML=
+
+minutes+":"+(seconds<10?"0":"")+seconds;
+
+
+
+if(time<=0){
+
+submitQuiz();
+
+}
+
+
+},1000);
+
+
+}
+
+
+
+
+function submitQuiz(){
+
+
+clearInterval(timer);
+
+
+let score=0;
+
+
+questions.forEach((item,index)=>{
+
+
+let answer=document.querySelector(
+`input[name="q${index}"]:checked`
+);
+
+
+if(answer && Number(answer.value)===item.c){
+
+score++;
+
+}
+
+});
+
+
+
+let percentage=Math.round(score/25*100);
+
+
+
+document.getElementById("quiz").innerHTML="";
+
+
+document.getElementById("submitArea").style.display="none";
+
+
+document.getElementById("result").innerHTML=
+
+"🏁 COMPLETE"+
+"<br><br>"+
+"Score: "+score+"/25"+
+"<br>"+
+percentage+"%";
+
+
+}
+
+
+
+loadQuiz();
+
+
+</script>
+
+
+</body>
+
+</html>
