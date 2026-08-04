@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Fantasy Football Combine - Reaction Challenge</title>
+
+<style>
+
+body{
+    background:#111827;
+    color:white;
+    font-family:Arial, sans-serif;
+    text-align:center;
+}
+
+h1{
+    color:#00d084;
+}
+
+#arena{
+
+    width:800px;
+    height:500px;
+    margin:20px auto;
+    background:#dc2626;
+    border-radius:15px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:60px;
+    font-weight:bold;
+    cursor:pointer;
+    border:3px solid #00d084;
+
+}
+
+#arena.go{
+    background:#16a34a;
+}
+
+
+button{
+
+    background:#00d084;
+    color:white;
+    border:none;
+    padding:15px 25px;
+    font-size:20px;
+    border-radius:10px;
+    cursor:pointer;
+
+}
+
+
+.stats{
+
+    font-size:24px;
+
+}
+
+
+#result{
+
+    color:#00d084;
+    font-size:28px;
+
+}
+
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<h1>🏈 Fantasy Football Combine</h1>
+
+<h2>⚡ Reaction Time Challenge</h2>
+
+
+<p>
+5 attempts.<br>
+Wait for green.<br>
+Click as fast as possible.
+</p>
+
+
+<div class="stats">
+
+Attempt:
+<span id="attempt">0</span>/5
+
+&nbsp;&nbsp;
+
+Last:
+<span id="last">--</span>
+
+</div>
+
+
+<br>
+
+
+<button onclick="startGame()">
+START EVENT
+</button>
+
+
+<div id="arena">
+READY
+</div>
+
+
+<h2 id="result"></h2>
+
+
+
+<script>
+
+
+let attempts=[];
+
+let attemptNumber=0;
+
+let startTime;
+
+let waiting=false;
+
+let active=false;
+
+let timeout;
+
+
+
+const arena=document.getElementById("arena");
+
+
+
+function startGame(){
+
+attempts=[];
+
+attemptNumber=0;
+
+document.getElementById("result").innerHTML="";
+
+document.getElementById("last").innerHTML="--";
+
+nextAttempt();
+
+}
+
+
+
+function nextAttempt(){
+
+
+attemptNumber++;
+
+
+document.getElementById("attempt").innerHTML=attemptNumber;
+
+
+arena.classList.remove("go");
+
+arena.innerHTML="WAIT";
+
+
+waiting=true;
+
+active=false;
+
+
+
+let delay=Math.random()*3500+1500;
+
+
+
+timeout=setTimeout(()=>{
+
+
+arena.classList.add("go");
+
+arena.innerHTML="GO!";
+
+
+startTime=performance.now();
+
+waiting=false;
+
+active=true;
+
+
+},delay);
+
+
+
+}
+
+
+
+arena.onclick=function(){
+
+
+
+if(waiting){
+
+clearTimeout(timeout);
+
+attempts.push(9999);
+
+arena.innerHTML="FALSE START!";
+
+arena.classList.remove("go");
+
+
+setTimeout(()=>{
+
+finishAttempt();
+
+},1000);
+
+
+return;
+
+}
+
+
+
+if(active){
+
+
+let reaction=performance.now()-startTime;
+
+
+attempts.push(reaction);
+
+
+document.getElementById("last").innerHTML=
+Math.round(reaction)+" ms";
+
+
+active=false;
+
+
+finishAttempt();
+
+
+}
+
+};
+
+
+
+function finishAttempt(){
+
+
+if(attemptNumber>=5){
+
+finishGame();
+
+}
+
+else{
+
+
+setTimeout(()=>{
+
+nextAttempt();
+
+},1000);
+
+
+}
+
+
+}
+
+
+
+
+function finishGame(){
+
+
+let total=0;
+
+let valid=0;
+
+let fastest=9999;
+
+
+attempts.forEach(time=>{
+
+
+if(time<9999){
+
+total+=time;
+
+valid++;
+
+if(time<fastest){
+
+fastest=time;
+
+}
+
+}
+
+
+});
+
+
+let average=Math.round(total/valid);
+
+
+
+let grade;
+
+
+if(average<200){
+
+grade="🏆 ELITE";
+
+}
+
+else if(average<250){
+
+grade="⭐ ALL-PRO";
+
+}
+
+else if(average<300){
+
+grade="STARTER";
+
+}
+
+else if(average<400){
+
+grade="BACKUP";
+
+}
+
+else{
+
+grade="PRACTICE SQUAD";
+
+}
+
+
+
+arena.innerHTML="COMPLETE";
+
+
+document.getElementById("result").innerHTML=
+
+"Average: "+average+" ms"+
+"<br>Fastest: "+Math.round(fastest)+" ms"+
+"<br>"+grade;
+
+
+
+}
+
+
+</script>
+
+
+</body>
+
+</html>

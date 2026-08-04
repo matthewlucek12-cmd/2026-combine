@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Fantasy Football Combine - Memory Challenge</title>
+
+<style>
+
+body{
+    background:#111827;
+    color:white;
+    font-family:Arial, sans-serif;
+    text-align:center;
+}
+
+h1{
+    color:#00d084;
+}
+
+#memoryBox{
+    width:800px;
+    height:200px;
+    margin:20px auto;
+    background:#1f2937;
+    border-radius:15px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:65px;
+    letter-spacing:20px;
+    border:3px solid #00d084;
+}
+
+#emojiGrid{
+    width:800px;
+    margin:auto;
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:15px;
+}
+
+.emoji{
+    width:80px;
+    height:80px;
+    background:#374151;
+    border-radius:15px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:45px;
+    cursor:pointer;
+}
+
+.emoji:hover{
+    background:#00d084;
+}
+
+.selected{
+    background:#00d084 !important;
+}
+
+button{
+    background:#00d084;
+    color:white;
+    border:none;
+    padding:15px 25px;
+    font-size:20px;
+    border-radius:10px;
+    cursor:pointer;
+    margin:10px;
+}
+
+button:disabled{
+    background:#4b5563;
+}
+
+.stats{
+    font-size:24px;
+}
+
+#result{
+    color:#00d084;
+    font-size:30px;
+}
+
+#selection{
+    font-size:30px;
+    height:50px;
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<h1>🏈 Fantasy Football Combine</h1>
+
+<h2>🧠 Memory Challenge</h2>
+
+
+<p>
+Memorize the sequence.<br>
+Click the emojis in the order you remember them.
+</p>
+
+
+<div class="stats">
+
+Round:
+<span id="round">0</span>/5
+
+&nbsp;&nbsp;
+
+Score:
+<span id="score">0</span>
+
+&nbsp;&nbsp;
+
+Time:
+<span id="timer">0.0</span>s
+
+</div>
+
+
+
+<div id="memoryBox">
+READY
+</div>
+
+
+<div>
+
+Your Selection:
+
+<div id="selection"></div>
+
+</div>
+
+
+
+<div id="emojiGrid"></div>
+
+
+<br>
+
+
+<button onclick="startGame()">
+START EVENT
+</button>
+
+
+<button onclick="submitAnswer()" id="submit" disabled>
+SUBMIT ANSWER
+</button>
+
+
+<h2 id="result"></h2>
+
+
+
+<script>
+
+
+const emojis=[
+
+"🏈",
+"⭐",
+"🔥",
+"🍀",
+"🐺",
+"⚡",
+"🦅",
+"🏆",
+"🎯",
+"💎",
+"🚀",
+"👑",
+"🛡️",
+"💪"
+
+];
+
+
+let sequence=[];
+
+let playerSequence=[];
+
+let round=0;
+
+let score=0;
+
+let active=false;
+
+
+let startTime;
+
+let timerInterval;
+
+
+
+function startGame(){
+
+round=0;
+score=0;
+
+
+document.getElementById("score").innerHTML="0";
+
+document.getElementById("result").innerHTML="";
+
+
+startTime=performance.now();
+
+
+timerInterval=setInterval(()=>{
+
+
+let elapsed=(performance.now()-startTime)/1000;
+
+
+document.getElementById("timer").innerHTML=
+elapsed.toFixed(1);
+
+
+},100);
+
+
+
+nextRound();
+
+}
+
+
+
+
+function nextRound(){
+
+
+round++;
+
+
+document.getElementById("round").innerHTML=round;
+
+
+playerSequence=[];
+
+
+document.getElementById("selection").innerHTML="";
+
+
+let length=round+2;
+
+
+sequence=[];
+
+
+
+while(sequence.length<length){
+
+
+let item=emojis[Math.floor(Math.random()*emojis.length)];
+
+
+if(!sequence.includes(item)){
+
+sequence.push(item);
+
+}
+
+
+}
+
+
+
+document.getElementById("memoryBox").innerHTML=
+sequence.join("");
+
+
+
+document.getElementById("emojiGrid").innerHTML="";
+
+
+document.getElementById("submit").disabled=true;
+
+
+active=false;
+
+
+
+setTimeout(()=>{
+
+
+document.getElementById("memoryBox").innerHTML="❓";
+
+
+createGrid();
+
+
+active=true;
+
+
+},5000);
+
+
+}
+
+
+
+
+function createGrid(){
+
+
+let grid=document.getElementById("emojiGrid");
+
+
+grid.innerHTML="";
+
+
+
+let options=[...sequence];
+
+
+
+while(options.length<12){
+
+
+let item=emojis[Math.floor(Math.random()*emojis.length)];
+
+
+if(!options.includes(item)){
+
+options.push(item);
+
+}
+
+}
+
+
+
+options.sort(()=>Math.random()-0.5);
+
+
+
+options.forEach(item=>{
+
+
+let button=document.createElement("div");
+
+
+button.className="emoji";
+
+
+button.innerHTML=item;
+
+
+
+button.onclick=function(){
+
+
+if(!active) return;
+
+
+if(playerSequence.length>=sequence.length) return;
+
+
+playerSequence.push(item);
+
+
+button.classList.add("selected");
+
+
+
+document.getElementById("selection").innerHTML=
+playerSequence.join(" ");
+
+
+
+if(playerSequence.length===sequence.length){
+
+document.getElementById("submit").disabled=false;
+
+}
+
+
+};
+
+
+
+grid.appendChild(button);
+
+
+});
+
+
+}
+
+
+
+
+
+function submitAnswer(){
+
+
+active=false;
+
+
+let roundScore=0;
+
+
+let matched=[];
+
+
+
+for(let i=0;i<sequence.length;i++){
+
+
+if(playerSequence[i]===sequence[i]){
+
+roundScore+=1;
+
+matched.push(i);
+
+}
+
+}
+
+
+
+for(let i=0;i<playerSequence.length;i++){
+
+
+if(playerSequence[i]!==sequence[i]){
+
+
+let found=false;
+
+
+for(let j=0;j<sequence.length;j++){
+
+
+if(
+playerSequence[i]===sequence[j] &&
+!matched.includes(j)
+){
+
+found=true;
+
+matched.push(j);
+
+break;
+
+}
+
+
+}
+
+
+
+if(found){
+
+roundScore+=0.5;
+
+}
+
+else{
+
+roundScore-=1;
+
+}
+
+
+}
+
+
+}
+
+
+
+score+=roundScore;
+
+
+document.getElementById("score").innerHTML=
+score.toFixed(1);
+
+
+
+document.getElementById("result").innerHTML=
+"Round Score: "+
+roundScore.toFixed(1);
+
+
+
+document.getElementById("emojiGrid").innerHTML="";
+
+document.getElementById("selection").innerHTML="";
+
+
+
+if(round>=5){
+
+
+finishGame();
+
+
+}
+
+else{
+
+
+setTimeout(()=>{
+
+nextRound();
+
+},2000);
+
+
+}
+
+
+
+}
+
+
+
+
+function finishGame(){
+
+
+clearInterval(timerInterval);
+
+
+let finalTime=
+((performance.now()-startTime)/1000)
+.toFixed(1);
+
+
+
+document.getElementById("memoryBox").innerHTML=
+"COMPLETE";
+
+
+document.getElementById("result").innerHTML=
+
+"FINAL SCORE: "+
+score.toFixed(1)+
+
+"<br>TIME: "+
+finalTime+
+" seconds";
+
+
+
+}
+
+
+
+</script>
+
+
+</body>
+
+</html>
