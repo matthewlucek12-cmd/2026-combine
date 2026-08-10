@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fantasy Football Combine - Depth Chart</title>
+
+<style>
+body{
+margin:0;
+background:#101820;
+color:white;
+font-family:Arial;
+text-align:center
+}
+
+header{
+background:#0b6623;
+padding:12px
+}
+
+.instructions{
+background:#263238;
+margin:12px auto;
+padding:12px;
+border-radius:10px;
+max-width:500px;
+font-size:14px
+}
+
+.stats{
+display:flex;
+justify-content:center;
+gap:10px;
+flex-wrap:wrap;
+margin:12px
+}
+
+.box{
+background:#263238;
+padding:10px;
+border-radius:8px
+}
+
+button{
+padding:10px 20px;
+background:#0b6623;
+color:white;
+border:0;
+border-radius:8px;
+font-size:16px
+}
+
+/* Corrected to 4 columns x 5 rows */
+.grid{
+display:grid;
+grid-template-columns:repeat(4,70px);
+gap:8px;
+justify-content:center;
+margin:20px
+}
+
+.card{
+height:70px;
+display:flex;
+align-items:center;
+justify-content:center;
+border:3px solid white;
+border-radius:10px;
+font-weight:bold;
+font-size:17px;
+cursor:pointer
+}
+
+.selected{
+border-color:yellow
+}
+
+.qb{background:#1565c0}
+.rb{background:#8e24aa}
+.wr{background:#ef6c00}
+.te{background:#2e7d32}
+.k{background:#795548}
+
+#result{
+display:none;
+position:fixed;
+inset:0;
+background:#101820;
+align-items:center;
+justify-content:center
+}
+
+.resultbox{
+background:#263238;
+padding:25px;
+border-radius:10px
+}
+
+@media(max-width:500px){
+
+.grid{
+grid-template-columns:repeat(4,55px)
+}
+
+.card{
+height:55px;
+font-size:13px
+}
+
+}
+</style>
+
+</head>
+
+<body>
+
+<header>
+<h1>🏈 Fantasy Football Combine</h1>
+<h2>Depth Chart Challenge</h2>
+</header>
+
+
+<div class="instructions">
+
+<b>How To Play</b><br>
+
+Sort the depth chart into the correct order.<br>
+
+Group each position together and place players from 1 to 4 left to right.<br><br>
+
+QB1 QB2 QB3 QB4<br>
+RB1 RB2 RB3 RB4<br>
+WR1 WR2 WR3 WR4<br>
+TE1 TE2 TE3 TE4<br>
+K1 K2 K3 K4<br><br>
+
+Tap one card, then another card to swap.
+
+</div>
+
+
+<div class="stats">
+
+<div class="box">
+Round: <span id="round">1</span>/2
+</div>
+
+<div class="box">
+Time: <span id="time">0</span>s
+</div>
+
+<div class="box">
+Moves: <span id="moves">0</span>
+</div>
+
+</div>
+
+
+<button onclick="restart()">Restart</button>
+
+
+<div class="grid" id="grid"></div>
+
+
+<div id="result">
+
+<div class="resultbox">
+
+<h2>🏆 Results</h2>
+
+<p id="results"></p>
+
+<button onclick="restart()">Play Again</button>
+
+</div>
+
+</div>
+
+
+
+<script>
+
+let goal=[
+"QB1","QB2","QB3","QB4",
+"RB1","RB2","RB3","RB4",
+"WR1","WR2","WR3","WR4",
+"TE1","TE2","TE3","TE4",
+"K1","K2","K3","K4"
+];
+
+
+let rounds=[
+
+[
+"K1","WR4","RB2","TE3",
+"QB4","WR2","TE1","K3",
+"QB2","RB4","TE4","WR1",
+"RB3","K4","QB1","RB1",
+"QB3","WR3","TE2","K2"
+],
+
+
+[
+"WR3","RB4","TE2","QB1",
+"K4","QB3","WR1","RB2",
+"K1","TE4","RB1","QB4",
+"TE3","WR4","K3","QB2",
+"WR2","K2","RB3","TE1"
+]
+
+];
+
+
+let board=[];
+let round=0;
+let selected=null;
+let moves=0;
+let time=0;
+let timer;
+let started=false;
+let results=[];
+
+
+
+function load(){
+
+board=[...rounds[round]];
+
+moves=0;
+time=0;
+selected=null;
+started=false;
+
+document.getElementById("moves").innerHTML=0;
+document.getElementById("time").innerHTML=0;
+document.getElementById("round").innerHTML=round+1;
+
+draw();
+
+}
+
+
+
+function draw(){
+
+let g=document.getElementById("grid");
+
+g.innerHTML="";
+
+
+board.forEach((x,i)=>{
+
+let c=document.createElement("div");
+
+c.className="card "+x.replace(/[0-9]/g,"").toLowerCase();
+
+if(selected==i){
+c.classList.add("selected");
+}
+
+c.innerHTML=x;
+
+c.onclick=()=>clickCard(i);
+
+g.appendChild(c);
+
+});
+
+}
+
+
+
+function clickCard(i){
+
+
+if(!started){
+
+started=true;
+
+timer=setInterval(()=>{
+
+time++;
+
+document.getElementById("time").innerHTML=time;
+
+},1000);
+
+}
+
+
+
+if(selected===null){
+
+selected=i;
+
+}
+
+else{
+
+
+if(selected!==i){
+
+let t=board[selected];
+
+board[selected]=board[i];
+
+board[i]=t;
+
+moves++;
+
+document.getElementById("moves").innerHTML=moves;
+
+}
+
+
+selected=null;
+
+check();
+
+}
+
+
+draw();
+
+}
+
+
+
+
+function check(){
+
+if(JSON.stringify(board)==JSON.stringify(goal)){
+
+
+clearInterval(timer);
+
+
+results.push({
+t:time,
+m:moves
+});
+
+
+round++;
+
+
+if(round<2){
+
+load();
+
+}
+
+else{
+
+show();
+
+}
+
+}
+
+
+}
+
+
+
+function show(){
+
+
+let totalT=0;
+
+let totalM=0;
+
+let text="";
+
+
+results.forEach((r,i)=>{
+
+totalT+=r.t;
+
+totalM+=r.m;
+
+text+="Round "+(i+1)+": "+r.t+"s / "+r.m+" moves<br>";
+
+});
+
+
+text+="<br>Total: "+totalT+"s / "+totalM+" moves";
+
+
+document.getElementById("results").innerHTML=text;
+
+document.getElementById("result").style.display="flex";
+
+
+}
+
+
+
+
+function restart(){
+
+clearInterval(timer);
+
+round=0;
+
+results=[];
+
+document.getElementById("result").style.display="none";
+
+load();
+
+}
+
+
+
+load();
+
+
+</script>
+
+</body>
+</html>
