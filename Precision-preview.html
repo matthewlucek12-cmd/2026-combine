@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Fantasy Football Combine - Precision Challenge</title>
+<style>
+body {
+    background:#111827;
+    color:white;
+    font-family:Arial, sans-serif;
+    text-align:center;
+}
+h1 { color:#00d084; }
+#game {
+    width:800px;
+    height:500px;
+    background:#1f2937;
+    margin:20px auto;
+    position:relative;
+    border-radius:15px;
+    overflow:hidden;
+    border:3px solid #00d084;
+}
+.target {
+    position:absolute;
+    border-radius:50%;
+    cursor:pointer;
+    background:
+    radial-gradient(circle,
+    white 0%,
+    white 10%,
+    red 11%,
+    red 30%,
+    orange 31%,
+    orange 50%,
+    darkorange 51%,
+    darkorange 100%);
+}
+button {
+    background:#00d084;
+    color:white;
+    border:none;
+    padding:15px 25px;
+    font-size:20px;
+    border-radius:10px;
+    cursor:pointer;
+}
+button:hover { opacity:.85; }
+.stats { font-size:24px; }
+#result {
+    font-size:28px;
+    color:#00d084;
+}
+</style>
+</head>
+<body>
+
+<h1>🏈 Fantasy Football Combine</h1>
+<h2>🎯 Precision Challenge</h2>
+
+<p>
+60 seconds.<br>
+Hit the targets before they disappear.<br>
+Accuracy matters more than speed.
+</p>
+
+<div class="stats">
+Time: <span id="time">60</span>
+&nbsp;&nbsp;
+Score: <span id="score">0</span>
+&nbsp;&nbsp;
+Hits: <span id="hits">0</span>
+&nbsp;&nbsp;
+Attempts: <span id="attempts">0</span>
+</div>
+
+<br>
+
+<button onclick="startGame()">START EVENT</button>
+
+<div id="game"></div>
+<h2 id="result"></h2>
+
+<script>
+let time = 60;
+let score = 0;
+let hits = 0;
+let attempts = 0;
+let timer;
+let shrinkTimer;
+let playing = false;
+let targetSize;
+
+function getTargetSize() {
+    let random = Math.random();
+
+    if (random < 0.30) return 50;
+    else if (random < 0.55) return 55;
+    else if (random < 0.75) return 60;
+    else if (random < 0.87) return 65;
+    else if (random < 0.94) return 70;
+    else if (random < 0.98) return 75;
+    else return 80;
+}
+
+function startGame() {
+    if (playing) return;
+
+    playing = true;
+    time = 60;
+    score = 0;
+    hits = 0;
+    attempts = 0;
+
+    updateStats();
+    document.getElementById("time").innerHTML = time;
+    document.getElementById("result").innerHTML = "";
+
+    spawnTarget();
+
+    timer = setInterval(function() {
+        time--;
+        document.getElementById("time").innerHTML = time;
+
+        if (time <= 0) {
+            endGame();
+        }
+    }, 1000);
+}
+
+function spawnTarget() {
+    if (!playing) return;
+
+    clearInterval(shrinkTimer);
+
+    let game = document.getElementById("game");
+    game.innerHTML = "";
+
+    targetSize = getTargetSize();
+
+    let target = document.createElement("div");
+    target.className = "target";
+
+    target.style.width = targetSize + "px";
+    target.style.height = targetSize + "px";
+
+    let x = Math.random() * (game.clientWidth - targetSize);
+    let y = Math.random() * (game.clientHeight - targetSize);
+
+    target.style.left = x + "px";
+    target.style.top = y + "px";
+
+    target.onclick = function(event) {
+        attempts++;
+
+        let rect = target.getBoundingClientRect();
+
+        let centerX = rect.left + targetSize / 2;
+        let centerY = rect.top + targetSize / 2;
+
+        let distance = Math.sqrt(
+            Math.pow(event.clientX - centerX, 2) +
+            Math.pow(event.clientY - centerY, 2)
+        );
+
+        let radius = targetSize / 2;
+
+        if (distance < radius * .10) {
+            score += 10;
+        }
+        else if (distance < radius * .30) {
+            score += 5;
+        }
+        else if (distance < radius * .50) {
+            score += 2;
+        }
+        else {
+            score += 1;
+        }
+
+        hits++;
+        updateStats();
+        spawnTarget();
+    };
+
+    game.appendChild(target);
+
+    shrinkTimer = setInterval(function() {
+        targetSize--;
+
+        target.style.width = targetSize + "px";
+        target.style.height = targetSize + "px";
+
+        if (targetSize <= 10) {
+            score--;
+            attempts++;
+            updateStats();
+            spawnTarget();
+        }
+    }, 50);
+}
+
+function updateStats() {
+    document.getElementById("score").innerHTML = score;
+    document.getElementById("hits").innerHTML = hits;
+    document.getElementById("attempts").innerHTML = attempts;
+}
+
+function endGame() {
+    playing = false;
+
+    clearInterval(timer);
+    clearInterval(shrinkTimer);
+
+    document.getElementById("game").innerHTML = "";
+
+    let accuracy = 0;
+
+    if (attempts > 0) {
+        accuracy = Math.round((hits / attempts) * 100);
+    }
+
+    document.getElementById("result").innerHTML =
+        "FINAL SCORE: " + score +
+        "<br>Targets Hit: " + hits +
+        "<br>Accuracy: " + accuracy + "%";
+}
+</script>
+
+</body>
+</html>
