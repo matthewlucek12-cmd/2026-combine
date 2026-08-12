@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Fantasy Football Combine - Field Goal Accuracy</title>
+
+<style>
+
+body{
+margin:0;
+background:#101820;
+color:white;
+font-family:Arial,sans-serif;
+text-align:center;
+}
+
+header{
+background:#0b6623;
+padding:20px;
+border-bottom:3px solid white;
+}
+
+h1{
+margin:0;
+}
+
+.stats{
+display:flex;
+justify-content:center;
+gap:15px;
+flex-wrap:wrap;
+margin:20px;
+}
+
+.box{
+background:#1c2b39;
+padding:12px 20px;
+border-radius:10px;
+}
+
+.field{
+width:90%;
+max-width:500px;
+height:300px;
+background:#167033;
+margin:20px auto;
+border:4px solid white;
+border-radius:15px;
+position:relative;
+}
+
+.crossbar{
+position:absolute;
+top:70px;
+left:35%;
+width:30%;
+height:8px;
+background:#f1c40f;
+}
+
+.post-left{
+position:absolute;
+top:10px;
+left:35%;
+width:8px;
+height:70px;
+background:#f1c40f;
+}
+
+.post-right{
+position:absolute;
+top:10px;
+right:35%;
+width:8px;
+height:70px;
+background:#f1c40f;
+}
+
+.ball{
+position:absolute;
+bottom:40px;
+left:47%;
+font-size:45px;
+}
+
+.meter{
+width:90%;
+max-width:500px;
+height:35px;
+background:#333;
+margin:20px auto;
+border-radius:10px;
+position:relative;
+overflow:hidden;
+}
+
+.target{
+position:absolute;
+height:100%;
+background:#2ecc71;
+}
+
+.bar{
+position:absolute;
+height:100%;
+width:5%;
+background:#3498db;
+}
+
+button{
+background:#0b6623;
+color:white;
+border:none;
+padding:15px 35px;
+font-size:20px;
+border-radius:10px;
+cursor:pointer;
+}
+
+button:disabled{
+background:#555;
+}
+
+#message{
+height:40px;
+font-size:28px;
+font-weight:bold;
+}
+
+#result{
+display:none;
+position:fixed;
+top:0;
+left:0;
+right:0;
+bottom:0;
+background:#101820;
+align-items:center;
+justify-content:center;
+}
+
+.resultbox{
+background:#1c2b39;
+padding:30px;
+border-radius:15px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+<h1>🏈 Fantasy Football Combine</h1>
+<h2>Field Goal Accuracy</h2>
+
+</header>
+
+
+<div class="stats">
+
+<div class="box">
+Kick: <span id="kick">1</span>/15
+</div>
+
+<div class="box">
+Made: <span id="made">0</span>
+</div>
+
+<div class="box">
+Time: <span id="time">0.0</span>s
+</div>
+
+</div>
+
+
+<div class="field">
+
+<div class="post-left"></div>
+<div class="post-right"></div>
+<div class="crossbar"></div>
+
+<div class="ball">
+🏈
+</div>
+
+</div>
+
+
+<h3>
+Stop the blue bar inside the green zone
+</h3>
+
+
+<div id="message"></div>
+
+
+<div class="meter">
+
+<div class="target" id="target"></div>
+
+<div class="bar" id="bar"></div>
+
+</div>
+
+
+<button id="kickButton" onclick="kick()">
+KICK
+</button>
+
+
+
+<div id="result">
+
+<div class="resultbox">
+
+<h2>🏆 Combine Complete</h2>
+
+<p>
+Made Kicks:
+<span id="finalMade"></span>/15
+</p>
+
+<p>
+Accuracy:
+<span id="accuracy"></span>%
+</p>
+
+<p>
+Time:
+<span id="finalTime"></span>s
+</p>
+
+<button onclick="location.reload()">
+Try Again
+</button>
+
+</div>
+
+</div>
+
+
+
+<script>
+
+let kickNumber=1;
+let made=0;
+
+let position=0;
+let direction=1;
+
+let speed=4.0;
+
+let running=true;
+
+let targetStart=0;
+let currentTargetSize=24;
+
+let startTime=0;
+let gameStarted=false;
+let clock;
+
+let bar=document.getElementById("bar");
+let target=document.getElementById("target");
+let button=document.getElementById("kickButton");
+let message=document.getElementById("message");
+
+let sizes=[
+24,
+24,
+24,
+24,
+24,
+21,
+18,
+15,
+12,
+10,
+8,
+7,
+6,
+4,
+3
+];
+
+
+function newTarget(){
+
+currentTargetSize=sizes[kickNumber-1];
+
+target.style.width=currentTargetSize+"%";
+
+targetStart=Math.floor(
+Math.random()*(100-currentTargetSize)
+);
+
+target.style.left=targetStart+"%";
+
+}
+
+
+newTarget();
+
+
+let timer=setInterval(()=>{
+
+if(!running)return;
+
+position+=direction*speed;
+
+if(position>=95){
+direction=-1;
+}
+
+if(position<=0){
+direction=1;
+}
+
+bar.style.left=position+"%";
+
+},20);
+
+
+
+function kick(){
+
+if(!running)return;
+
+
+if(!gameStarted){
+
+gameStarted=true;
+
+startTime=Date.now();
+
+clock=setInterval(()=>{
+
+let elapsed=(Date.now()-startTime)/1000;
+
+document.getElementById("time").innerHTML=
+elapsed.toFixed(1);
+
+},100);
+
+}
+
+
+running=false;
+button.disabled=true;
+
+
+let kickPosition=position;
+
+
+/* BLUE BAR IS 5% WIDE.
+   A HIT OCCURS WHEN ANY PART OF THE
+   BLUE BAR OVERLAPS THE GREEN ZONE. */
+
+let blueStart=kickPosition;
+let blueEnd=kickPosition+5;
+
+let greenStart=targetStart;
+let greenEnd=targetStart+currentTargetSize;
+
+
+let hit=
+blueStart<greenEnd &&
+blueEnd>greenStart;
+
+
+
+if(hit){
+
+made++;
+
+message.innerHTML="✅ GOOD KICK!";
+message.style.color="#2ecc71";
+
+}
+else{
+
+message.innerHTML="❌ MISSED";
+message.style.color="#e74c3c";
+
+}
+
+
+document.getElementById("made").innerHTML=made;
+
+
+setTimeout(()=>{
+
+kickNumber++;
+
+
+if(kickNumber>15){
+
+finish();
+
+}
+else{
+
+document.getElementById("kick").innerHTML=kickNumber;
+
+position=0;
+direction=1;
+
+newTarget();
+
+message.innerHTML="";
+
+button.disabled=false;
+
+running=true;
+
+}
+
+},1000);
+
+}
+
+
+
+function finish(){
+
+clearInterval(timer);
+clearInterval(clock);
+
+
+let finalTime=
+((Date.now()-startTime)/1000).toFixed(1);
+
+
+document.getElementById("finalMade").innerHTML=made;
+
+document.getElementById("accuracy").innerHTML=
+Math.round((made/15)*100);
+
+document.getElementById("finalTime").innerHTML=
+finalTime;
+
+
+document.getElementById("result").style.display="flex";
+
+}
+
+</script>
+
+</body>
+</html>
