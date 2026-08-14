@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fantasy Football Combine - Cognitive Challenge</title>
+<style>
+body{margin:0;background:#111827;color:#fff;font-family:Arial,sans-serif}
+.wrap{max-width:800px;margin:auto;padding:18px}
+h1{text-align:center;color:#22c55e;margin:8px 0}
+.subtitle{text-align:center;margin:0 0 10px}
+#timer{position:sticky;top:0;background:#111827;text-align:center;font-size:28px;font-weight:bold;color:#22c55e;padding:12px;z-index:5}
+.section{margin-top:28px}
+.section h2{background:#22c55e;padding:12px;border-radius:10px;font-size:21px}
+.q{background:#1f2937;padding:16px;margin:12px 0;border-radius:10px}
+.qtext{font-weight:bold;line-height:1.4;margin-bottom:12px}
+.option{display:block;background:#374151;padding:11px;margin:7px 0;border-radius:7px}
+.option input{margin-right:8px}
+.visual{text-align:center;margin:14px}
+.grid{width:160px;height:160px;margin:auto;display:grid;grid-template-columns:1fr 1fr;border:3px solid white}
+.cell{border:2px solid white}.shade{background:#6b7280}
+.arrow{font-size:80px}
+#start,#submit{display:block;margin:25px auto;background:#22c55e;color:#fff;border:0;border-radius:9px;padding:15px 28px;font-size:19px;font-weight:bold;cursor:pointer}
+#submit:disabled{background:#555;cursor:default}
+#result{margin:25px 0}
+.box{background:#1f2937;border-radius:12px;padding:20px}
+.start-panel{text-align:center;margin-top:35px}
+.start-panel p{line-height:1.5;margin:12px auto;max-width:520px}
+.total{text-align:center;font-size:28px;font-weight:bold;color:#22c55e;margin-bottom:12px}
+.row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #374151}
+.row:last-child{border:0}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>🏈 Fantasy Football Combine</h1>
+<p class="subtitle">🧠 Cognitive Challenge — 25 Questions | 6 Minutes</p>
+<div id="timer">Time Remaining: 6:00</div>
+
+<div id="startScreen" class="box start-panel">
+  <h2>Ready to begin?</h2>
+  <p>You will have 6 minutes to answer all 25 questions. The timer starts when you select Start Test.</p>
+  <button id="start" type="button">START TEST</button>
+</div>
+
+<form id="quiz" hidden></form>
+<button id="submit" type="button" hidden>SUBMIT TEST</button>
+<div id="result"></div>
+</div>
+
+<script>
+const sections=[
+{
+title:"🧮 Math / Quantitative",
+questions:[
+["A quarterback completes 72% of 50 passes. How many passes does he complete?",["32","34","36","38","40"],2],
+["A jersey costs $90 after a 25% discount. What was its original price?",["$110","$115","$120","$125","$130"],2],
+["A player averages 6 yards per carry on 15 carries. How many total yards does he have?",["75","80","90","95","100"],2],
+["A team has won 60% of its first 20 games. How many games has it won?",["10","12","14","15","16"],1],
+["A rectangular field is 30 metres long and 20 metres wide. What is its area?",["500 m²","600 m²","700 m²","800 m²","1,000 m²"],1],
+["A number is increased by 20% and then decreased by 20%. Compared with the original number, the final number is:",["The same","2% smaller","4% smaller","4% larger","8% smaller"],2],
+["A player has 80 receiving yards after 5 catches. How many more yards does he need on his next 3 catches to finish with a 15-yard average over 8 catches?",["25","30","35","40","45"],3]
+]
+},
+{
+title:"🧠 Logic / Reasoning",
+questions:[
+["All quarterbacks are athletes. Tom is a quarterback. What must be true?",["Tom is an athlete.","All athletes are quarterbacks.","Tom is a coach.","Tom is a rookie.","Some athletes are not quarterbacks."],0],
+["What number comes next? 2, 4, 8, 16, 32, ___",["48","56","60","64","72"],3],
+["Which number does not belong? 9, 16, 25, 36, 45",["9","16","25","36","45"],4],
+["A, B, C and D finish a race. A finishes before B. C finishes after B. D finishes before A. Who must finish first?",["A","B","C","D","Cannot be determined"],3],
+["What number replaces the question mark? 3, 6, 12, 24, ?, 96",["36","42","48","54","60"],2],
+["All coaches are leaders. Some leaders are players. Which statement must be true?",["All players are coaches.","Some players are coaches.","All coaches are leaders.","No players are coaches.","All leaders are coaches."],2],
+["Five players are ranked from 1st to 5th. Mike finishes ahead of John. John finishes ahead of Steve. Who cannot finish 1st?",["Mike","John","Steve","Mike or John","Any of them could finish 1st"],2],
+["What letter comes next? B, E, H, K, N, ___",["O","P","Q","R","S"],2]
+]
+},
+{
+title:"📚 Vocabulary / Language",
+questions:[
+["Which word is closest in meaning to 'reluctant'?",["Eager","Hesitant","Confident","Certain","Aggressive"],1],
+["Which word is the opposite of 'scarce'?",["Rare","Limited","Abundant","Valuable","Expensive"],2],
+["Choose the grammatically correct sentence.",["The players was ready.","The players were ready.","The players is ready.","The players be ready.","The players has ready."],1],
+["Which word best completes the sentence? The coach's explanation was so ______ that everyone understood the strategy immediately.",["obscure","confusing","clear","hesitant","reluctant"],2],
+["Which pair has the most similar relationship? HOT : COLD",["Fast : quick","Big : large","Up : down","Run : walk","Strong : powerful"],2],
+["Which sentence uses 'their' correctly?",["Their going to the game tonight.","The players left their equipment in the locker room.","The team won because their played well.","Their is no time left.","The coach said their ready."],1]
+]
+},
+{
+title:"📐 Spatial / Pattern Reasoning",
+questions:[
+["A square is divided into four equal squares. The top-left and bottom-right squares are shaded. If the entire figure is rotated 90° clockwise, which squares are shaded?",["Top-left and bottom-right","Top-right and bottom-left","Top-left and top-right","Bottom-left and bottom-right","All four"],1,"grid"],
+["Which shape has the greatest number of sides?",["Triangle","Square","Pentagon","Hexagon","Octagon"],4],
+["A cube has six faces. If the cube is painted on all six sides and then cut into 8 equal smaller cubes, how many of the smaller cubes have exactly three painted faces?",["2","4","6","8","None"],3,"cube"],
+["An arrow is pointing UP. It is rotated 180° clockwise, then rotated another 90° clockwise. Which direction is it now pointing?",["Up","Down","Left","Right","It returns to its original position"],2,"arrow"]
+]
+}
+];
+
+const quiz=document.getElementById("quiz");
+let number=1;
+
+sections.forEach(section=>{
+  const s=document.createElement("section");
+  s.className="section";
+  const h=document.createElement("h2");
+  h.textContent=section.title;
+  s.appendChild(h);
+
+  section.questions.forEach(item=>{
+    const q=document.createElement("div");
+    q.className="q";
+    let visual="";
+    if(item[3]==="grid"){
+      visual='<div class="visual"><div class="grid"><div class="cell shade"></div><div class="cell"></div><div class="cell"></div><div class="cell shade"></div></div></div>';
+    }
+    if(item[3]==="cube") visual='<div class="visual" style="font-size:75px">🧊</div>';
+    if(item[3]==="arrow") visual='<div class="visual arrow">⬆️</div>';
+
+    q.innerHTML='<div class="qtext">'+number+'. '+item[0]+'</div>'+visual+
+      item[1].map((answer,i)=>
+      '<label class="option"><input type="radio" name="q'+(number-1)+'" value="'+i+'">'+answer+'</label>'
+      ).join("");
+    s.appendChild(q);
+    number++;
+  });
+  quiz.appendChild(s);
+});
+
+let remaining=360;
+let finished=false;
+let started=false;
+let clock;
+
+function updateTimer(){
+  const m=Math.floor(remaining/60);
+  const s=remaining%60;
+  document.getElementById("timer").textContent="Time Remaining: "+m+":"+(s<10?"0":"")+s;
+}
+
+function startQuiz(){
+  if(started || finished)return;
+  started=true;
+  document.getElementById("startScreen").hidden=true;
+  quiz.hidden=false;
+  document.getElementById("submit").hidden=false;
+  updateTimer();
+
+  clock=setInterval(()=>{
+    if(finished)return;
+    remaining--;
+    updateTimer();
+    if(remaining<=0){
+      remaining=0;
+      updateTimer();
+      finish();
+    }
+  },1000);
+}
+
+function finish(){
+  if(finished)return;
+  finished=true;
+  clearInterval(clock);
+
+  let total=0, qnum=0;
+  const scores=[];
+
+  sections.forEach(section=>{
+    let score=0;
+    section.questions.forEach(item=>{
+      const selected=document.querySelector('input[name="q'+qnum+'"]:checked');
+      if(selected && Number(selected.value)===item[2]){score++;total++;}
+      qnum++;
+    });
+    scores.push([section.title,score,section.questions.length]);
+  });
+
+  const used=360-remaining;
+  const minutes=Math.floor(used/60);
+  const seconds=used%60;
+
+  document.getElementById("quiz").innerHTML="";
+  document.getElementById("submit").disabled=true;
+
+  let output='<div class="box"><div class="total">FINAL SCORE: '+total+'/25</div>';
+  output+='<div style="text-align:center;margin-bottom:15px">'+Math.round(total/25*100)+'%</div>';
+
+  scores.forEach(s=>{
+    output+='<div class="row"><span>'+s[0]+'</span><strong>'+s[1]+'/'+s[2]+'</strong></div>';
+  });
+
+  output+='<div class="row"><span>Time Used</span><strong>'+minutes+":"+(seconds<10?"0":"")+seconds+'</strong></div></div>';
+  document.getElementById("result").innerHTML=output;
+}
+
+document.getElementById("start").addEventListener("click",startQuiz);
+document.getElementById("submit").addEventListener("click",finish);
+
+updateTimer();
+</script>
+</body>
+</html>
